@@ -17,7 +17,7 @@ for i in arestas1:
     g1.adiciona_aresta(i)
 
 vertices2 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-arestas2 = ['A-B', 'A-C', 'B-D', 'D-C', 'D-H', 'C-E', 'F-E', 'E-G']
+arestas2 = ['A-B', 'A-C', 'B-D', 'D-C', 'D-H', 'H-F', 'C-E', 'F-E', 'E-G', 'D-F', 'G-F']
 cargas2 = ['D']
 
 g2 = Grafo([], [])
