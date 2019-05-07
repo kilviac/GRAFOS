@@ -17,8 +17,8 @@ for i in arestas1:
     g1.adiciona_aresta(i)
 
 vertices2 = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-arestas2 = ['A-C', 'A-B', 'A-D', 'C-F', 'D-H', 'B-G', 'B-E', 'G-H', 'G-F']
-cargas2 = ['B']
+arestas2 = ['A-B', 'A-C', 'B-D', 'D-C', 'D-H', 'C-E', 'F-E', 'E-G']
+cargas2 = ['D']
 
 g2 = Grafo([], [])
 for i in vertices2:
@@ -27,4 +27,4 @@ for i in arestas2:
     g2.adiciona_aresta(i)
 
 print(g1.dijkstra('A', 'K', 3, cargas1))
-print(g2.dijkstra('A', 'H', 1, cargas2))
+print(g2.dijkstra('B', 'G', 1, cargas2))
