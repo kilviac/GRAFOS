@@ -1,17 +1,5 @@
-import math
-from bucketSort import *
-
-def arestasOrdenadas(vertices, arestas, vet):
-
-    listOrdenada = []
-    for k in vet:
-        for i in range(len(vertices)):
-            for j in range(len(vertices)):
-                concatenacao = vertices[i] + '-' + vertices[j]
-                if arestas[i][j] != '-'  and arestas[i][j] > 0 and arestas[i][j] == k and concatenacao not in listOrdenada:
-                    listOrdenada.append(concatenacao)
-
-    return listOrdenada
+from copy import deepcopy
+from math import inf
 
 class VerticeInvalidoException(Exception):
     pass
@@ -21,36 +9,6 @@ class ArestaInvalidaException(Exception):
 
 class MatrizInvalidaException(Exception):
     pass
-
-
-
-def listaArestas(vertices, arestas):
-    adj = []
-
-    for i in range(len(vertices)):  # vertices com peso
-        for j in range(len(vertices)):
-            if arestas[i][j] > 0:
-                concatenacao = vertices[i] + '-' + vertices[j]
-                adj.append(concatenacao)
-
-    return adj
-
-def menorPeso(vertices, arestas, adj):
-    pesos = []
-
-    for i in range(len(vertices)):  # lista com os pesos das arestas
-        for j in range(len(vertices)):
-            if arestas[i][j] != '-' and arestas[i][j] > 0:
-                pesos.append(arestas[i][j])
-    menor = pesos[0]
-
-    for i in range(len(pesos)):  # pegar a aresta com o menor peso
-        if pesos[i] <= menor:
-            vertice_menor = adj[i]
-
-    return vertice_menor
-
-
 
 class Grafo:
 
@@ -70,8 +28,12 @@ class Grafo:
                 raise VerticeInvalidoException('O vértice ' + v + ' é inválido')
             if len(v) > self.__maior_vertice:
                 self.__maior_vertice = len(v)
-
         self.N = N
+        self.minE = None
+        self.maxE = None
+        self.arestas = {}  # g.MD = {'a0': ['D-C', 1], 'a1': ['C-C', 1]}
+        self.VA = {}  # {'D': ['a1'], 'C': ['a1', 'a2']}g
+        self.contador = 1  # contador para a gravação das chaves (arestas) do self.MD { "a{}".format(selfcounter) }
 
         if len(M) != len(N):
             raise MatrizInvalidaException('A matriz passada como parâmetro não tem o tamanho correto')
@@ -175,11 +137,33 @@ class Grafo:
         else:
             raise VerticeInvalidoException('O vértice ' + v + ' é inválido')
 
-    def adiciona_aresta(self, a, peso):
-        if self.aresta_valida(a):
-            self.M[self.indice_primeiro_vertice_aresta(a)][self.indice_segundo_vertice_aresta(a)] = peso
+    def adiciona_aresta(self, a):
+        peso = a[-1]
+        if self.aresta_valida(a[0]) and self.peso_valido(peso):
+            self.M[self.indice_primeiro_vertice_aresta(a[0])][self.indice_segundo_vertice_aresta(a[0])] += 1
+            aresta = "a{}".format(self.contador)
+            self.contador += 1
+            self.arestas[aresta] = [a[0], peso]
+            if self.minE is None:
+                self.minE = aresta
+            elif peso < self.arestas[self.minE][-1]:
+                self.minE = aresta
+            if self.maxE is None:
+                self.maxE = aresta
+            elif peso > self.arestas[self.maxE][-1]:
+                self.maxE = aresta
+            if a[0][0] in self.VA.keys():
+                if aresta not in self.VA[a[0][0]]:
+                    self.VA[a[0][0]].append(aresta)
+            else:
+                self.VA[a[0][0]] = [aresta]
+            if a[0][-1] in self.VA.keys():
+                if aresta not in self.VA[a[0][-1]]:
+                    self.VA[a[0][-1]].append(aresta)
+            else:
+                self.VA[a[0][-1]] = [aresta]
         else:
-            ArestaInvalidaException('A aresta ' + self.A[a] + ' é inválida')
+            ArestaInvalidaException('A aresta ' + self.A[a[0]] + ' é inválida')
 
     def __str__(self):
         '''
@@ -189,7 +173,7 @@ class Grafo:
         '''
 
         # Dá o espaçamento correto de acordo com o tamanho do string do maior vértice
-        espaco = ' '*(self.__maior_vertice)
+        espaco = ' ' * (self.__maior_vertice)
 
         grafo_str = espaco + ' '
 
@@ -208,72 +192,47 @@ class Grafo:
 
         return grafo_str
 
-    def prim(self):
+    def peso_valido(self, p):
+        if 0 < p < inf:
+            return True
+        return False
+
+    def Prim(self):
         vertices = self.N
-        arestas = self.M
-        arvore = []
+        listArestas = self.arestas #self.MD
+        vEscolhido = vertices[0] #vertice arbitrario
+        vTamanho = len(vertices) #quant
+        copyVertices = deepcopy(vertices) #vertices_para_aclopar
+        listVerticeEscolhido = [] #vertices aclopados
+        listVerticeEscolhido.append(vEscolhido)
+        copyVertices.remove(vEscolhido)
+        copyArestas = deepcopy(listArestas) #are
+        dictArestas = {} #arestas
 
-        adj = listaArestas(vertices, arestas)
-        vertice_menor = menorPeso(vertices, arestas, adj)
+        while(len(listVerticeEscolhido)) != vTamanho:
+            minimo = None #Min
+            aux = None #ar
 
-        inicio = vertice_menor[0]
-        listVertice = [inicio]
-        Q = vertices.copy()
-        Q.remove(inicio)
+            for i in copyArestas.keys():
+                if (copyArestas[i][0][0] in copyVertices and copyArestas[i][0][-1] not in copyVertices) or (copyArestas[i][0][-1] in copyVertices and copyArestas[i][0][0] not in copyVertices):
+                    if minimo is None:
+                        minimo = copyArestas[i]
+                        aux = i
+                    else:
+                        if copyArestas[i][-1] < minimo[-1]:
+                            minimo = copyArestas[i]
+                            aux = i
 
-        for i in range(len(Q)):
-            custo = math.inf
-            a = None
-            b = None
-            for a1 in listVertice:
-                for a2 in Q:
-                    i1 = vertices.index(a1)
-                    i2 = vertices.index(a2)
-                    posicaoAresta = [arestas[i1][i2]]
+            if minimo is not None:
+                dictArestas[aux] = listArestas[aux]
+                if copyArestas[aux][0][0] in copyVertices:
+                    verticeAux = copyArestas[aux][0][0]
+                else:
+                    verticeAux = copyArestas[aux][0][-1]
+                listVerticeEscolhido.append(verticeAux)
+                copyVertices.remove(verticeAux)
 
-                    if posicaoAresta == [0]:
-                        i2 = vertices.index(a1)
-                        i1 = vertices.index(a2)
-                        posicaoAresta = [arestas[i1][i2]]
+            else:
+                return False
 
-                    if posicaoAresta != [0]:
-                        for i in range(len(posicaoAresta)):
-                            minCusto = posicaoAresta[i]
-                            if minCusto < custo:
-                                a = a1
-                                b = a2
-                                custo = minCusto
-
-            if custo != math.inf:
-                concatenacao = a + '-' + b
-                arvore.append(concatenacao)
-                listVertice.append(b)
-                Q.remove(b)
-
-        return arvore
-
-    def kruskal(self):
-        vertices = self.N
-        arestas = self.M
-        vet = []
-        la = []
-        lb = []
-        arvore = []
-
-        for i in arestas:
-            for j in i:
-                if j != '-' and j > 0:
-                    vet.append(j)
-
-        vet = bucketSort(vet)
-        listOrdenada = arestasOrdenadas(vertices, arestas, vet)
-
-        for i in listOrdenada:
-            s = i.split('-')
-            if ((s[0] and s[1]) not in la) or ((s[0] and s[1]) not in lb):
-                if (s[1] not in la) and (s[0] not in lb):
-                    arvore.append(i)
-                    la.append(s[0])
-                    lb.append(s[1])
-
-        return arvore
+        return dictArestas
