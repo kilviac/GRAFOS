@@ -199,9 +199,7 @@ class Grafo:
 
 
     def Prim(self):
-
         vertices = self.N
-        arestas = self.M
         listArestas = self.arestas
         const0 = 0
         const1 = -1
