@@ -3,6 +3,7 @@ from grafo_adj import *
 
 
 class TestGrafo(unittest.TestCase):
+
     def setUp(self):
         # Grafo da Paraíba
         self.g_p = Grafo([], [])

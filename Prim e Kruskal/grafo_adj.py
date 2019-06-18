@@ -1,4 +1,4 @@
-from copy import deepcopy
+from copy import copy, deepcopy
 from math import inf
 
 class VerticeInvalidoException(Exception):
@@ -31,8 +31,8 @@ class Grafo:
         self.N = N
         self.minE = None
         self.maxE = None
-        self.arestas = {}  # g.MD = {'a0': ['D-C', 1], 'a1': ['C-C', 1]}
-        self.VA = {}  # {'D': ['a1'], 'C': ['a1', 'a2']}g
+        self.arestas = {}
+        self.VA = {}
         self.contador = 1  # contador para a gravação das chaves (arestas) do self.MD { "a{}".format(selfcounter) }
 
         if len(M) != len(N):
@@ -197,38 +197,44 @@ class Grafo:
             return True
         return False
 
+
     def Prim(self):
+
         vertices = self.N
-        listArestas = self.arestas #self.MD
-        vEscolhido = vertices[0] #vertice arbitrario
-        vTamanho = len(vertices) #quant
-        copyVertices = deepcopy(vertices) #vertices_para_aclopar
-        listVerticeEscolhido = [] #vertices aclopados
+        arestas = self.M
+        listArestas = self.arestas
+        const0 = 0
+        const1 = -1
+
+        vEscolhido = vertices[const0]
+        vTamanho = len(vertices)
+        copyVertices = deepcopy(vertices)
+        listVerticeEscolhido = []
         listVerticeEscolhido.append(vEscolhido)
         copyVertices.remove(vEscolhido)
-        copyArestas = deepcopy(listArestas) #are
-        dictArestas = {} #arestas
+        copyArestas = deepcopy(listArestas)
+        dictArestas = {}
 
         while(len(listVerticeEscolhido)) != vTamanho:
-            minimo = None #Min
-            aux = None #ar
+            minimo = None
+            aux = None
 
             for i in copyArestas.keys():
-                if (copyArestas[i][0][0] in copyVertices and copyArestas[i][0][-1] not in copyVertices) or (copyArestas[i][0][-1] in copyVertices and copyArestas[i][0][0] not in copyVertices):
+                if (copyArestas[i][const0][const0] in copyVertices and copyArestas[i][const0][const1] not in copyVertices) or (copyArestas[i][const0][const1] in copyVertices and copyArestas[i][const0][const0] not in copyVertices):
                     if minimo is None:
                         minimo = copyArestas[i]
                         aux = i
                     else:
-                        if copyArestas[i][-1] < minimo[-1]:
+                        if copyArestas[i][const1] < minimo[const1]:
                             minimo = copyArestas[i]
                             aux = i
 
             if minimo is not None:
                 dictArestas[aux] = listArestas[aux]
-                if copyArestas[aux][0][0] in copyVertices:
-                    verticeAux = copyArestas[aux][0][0]
+                if copyArestas[aux][const0][const0] in copyVertices:
+                    verticeAux = copyArestas[aux][const0][const0]
                 else:
-                    verticeAux = copyArestas[aux][0][-1]
+                    verticeAux = copyArestas[aux][const0][const1]
                 listVerticeEscolhido.append(verticeAux)
                 copyVertices.remove(verticeAux)
 
