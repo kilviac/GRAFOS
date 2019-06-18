@@ -283,6 +283,7 @@ class Grafo:
         pilha = []
         visitados = []  # lista de vertices já visitados
         listArestasRetorno = [] # armazena as arestas de retorno
+        arvore_dfs = [] # armazena a mst
         novoVert = 0 # novo vértice a ser percorrido
 
         for k in arestas: # inverte os vértices e adiciona na lista de arestas invertidas
@@ -300,7 +301,7 @@ class Grafo:
             adj = verticesAdjacentes(self, v) # lista de vértices adjacentes a v
 
             if visitados[v] == False:  # verifica se o vertice foi visitado
-                print(vertices[v])
+                arvore_dfs.append(vertices[v])
                 visitados[v] = True # marca como visitado
                 pilha.append(v) # insere 'v' na pilha
 
@@ -329,4 +330,5 @@ class Grafo:
                 else:
                     v = pilha[len(pilha) - 1] # pega o elemento do topo da pilha
 
-        print('\n Arestas de retorno: ', listArestasRetorno)
+        return arvore_dfs, listArestasRetorno
+        # print(arvore_dfs, listArestasRetorno)
