@@ -23,6 +23,6 @@ class TestGrafo(unittest.TestCase):
             self.g3.adicionaAresta(i)
 
     def test_dfs(self):
-        self.assertEqual(self.g1.dfs('A'), [['A', 'B', 'F', 'G', 'C', 'J', 'I', 'E', 'D', 'H'] ['G-C', 'J-F', 'G-C', 'I-F', 'F-B', 'B-A', 'H-D', 'H-D', 'E-A']])
-        self.assertEqual(self.g2.dfs('A'), [['A', 'B', 'D', 'E', 'C', 'F', 'G', 'H'] ['D-B', 'E-B', 'B-A', 'F-C', 'H-G', 'G-C', 'C-A']])
-        self.assertEqual(self.g3.dfs('A'), [['A', 'B', 'D', 'E', 'C', 'F'] ['D-B', 'E-B', 'B-A', 'F-C', 'C-A']])
+        self.assertEqual(self.g1.dfs('A'), (['A', 'B', 'F', 'G', 'C', 'J', 'I', 'E', 'D', 'H'], ['G-C', 'J-F', 'G-C', 'I-F', 'F-B', 'B-A', 'H-D', 'H-D', 'E-A']))
+        self.assertEqual(self.g2.dfs('A'), (['A', 'B', 'D', 'E', 'C', 'F', 'G', 'H'], ['D-B', 'E-B', 'B-A', 'F-C', 'H-G', 'G-C', 'C-A']))
+        self.assertEqual(self.g3.dfs('A'), (['A', 'B', 'D', 'E', 'C', 'F'], ['D-B', 'E-B', 'B-A', 'F-C', 'C-A']))

@@ -331,4 +331,3 @@ class Grafo:
                     v = pilha[len(pilha) - 1] # pega o elemento do topo da pilha
 
         return arvore_dfs, listArestasRetorno
-        # print(arvore_dfs, listArestasRetorno)
