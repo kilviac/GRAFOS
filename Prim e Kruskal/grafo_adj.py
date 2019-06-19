@@ -202,23 +202,6 @@ class Grafo:
 
     # PRIM
 
-    def Min(self, dictionary):
-        aux = None
-
-        try:
-            inicio = min(dictionary.values())
-        except:
-            return "vazio"
-
-        if inicio != inf:
-            for i in dictionary.keys():
-                if dictionary[i] == inicio:
-                    aux = i
-        if aux is None:
-            return 'desconexo'
-
-        return aux
-
     def verticesAdjacentes(self, vertice, dictionary):
         vertices = self.V
         arestas = self.D
@@ -259,80 +242,67 @@ class Grafo:
         if menorAresta is not None:
             return self.arestas[menorAresta][const][const]
 
-        return "vazio"
+        return "Vazio"
+
+    def Min(self, dictionary):
+        aux = None
+
+        try:
+            inicio = min(dictionary.values())
+        except:
+            return "Vazio"
+
+        if inicio != inf:
+            for i in dictionary.keys():
+                if dictionary[i] == inicio:
+                    aux = i
+        if aux is None:
+            return 'Desconexo'
+
+        return aux
 
     def Prim(self):
         vertices = self.N
-        map = {}
-        vInicial = self.menorVertice()
-        mapa = {}
-        mapa[vInicial] = 0
-        pode = True
-        dict = {}
-        const1 = -1
         arestas = self.arestas
-        aux = None
-
+        vInicial = self.menorVertice()
+        dict1 = {}
+        dict2 = {}
+        arvore = {}
+        estado = True
 
         for i in vertices:
-            mapa[i] = inf
+            dict2[i] = inf
+
+        dict2[vInicial] = 0
 
         while True:
-            if pode:
+            if estado:
                 inicio = vInicial
-                pode = False
+                estado = False
             else:
-                inicio = self.Min(mapa)
-            if inicio == "desconexo":
+                inicio = self.Min(dict2)
+            if inicio == "Desconexo":
                 return False
-            elif inicio == "vazio":
+            elif inicio == "Vazio":
                 break
             else:
-                mapa.pop(inicio)
-                verticeAdj = self.verticesAdjacentes(inicio, mapa)
+                dict2.pop(inicio)
+                verticeAdj = self.verticesAdjacentes(inicio, dict2)
                 for i in verticeAdj:
-                    menor_aresta = self.menorAresta(i, inicio, map)
-                    mapa[i] = arestas[menor_aresta][const1]
-                    if i not in map.keys():
-                        map[i] = menor_aresta
+                    menorAresta = self.menorAresta(i, inicio, dict1)
+                    dict2[i] = arestas[menorAresta][const1]
+                    if i not in dict1.keys():
+                        dict1[i] = menorAresta
                     else:
-                        if arestas[menor_aresta][const1] < arestas[map[i]][const1]:
-                            map[i] = menor_aresta
+                        if arestas[menorAresta][const1] < arestas[dict1[i]][const1]:
+                            dict1[i] = menorAresta
 
-        for i in map.values():
-            dict[i] = self.arestas[i]
-        return dict
+        for i in dict1.values():
+            arvore[i] = self.arestas[i]
+
+        return arvore
 
     # KRUSKAL
-
-    def mesma_arv_fixed(self, floresta, a, b):
-        self.vertices = []
-        self.estado = False
-        self.mesma_arvore_r_fixed(floresta, a, b)
-        return self.estado
-
-    def mesma_arvore_r_fixed(self, floresta, a, b):
-        if a == b:
-            self.estado = True
-        self.vertices.append(a)
-        for i in floresta[a]:
-            if i not in self.vertices:
-                self.mesma_arvore_r_fixed(floresta, i, b)
-
-    # def arvore(self, floresta, x, y):
-    #     self.vertices = []
-    #     self.estado = False
-    #
-    #     if x == y:
-    #         self.estado = True
-    #
-    #     self.vertices.append(x)
-    #
-    #     for i in floresta[x]:
-    #         if i not in self.vertices:
-    #             self.arvore(floresta, i, y)
-    #
-    #     return self.estado
 
     def pilha(self, dictionary):
         lista = dictionary.values()
@@ -354,6 +324,20 @@ class Grafo:
 
         return listaOrdenada
 
+    def recursivaA(self, floresta, a, b):
+        self.vertices = []
+        self.estado = False
+        self.recursivaB(floresta, a, b)
+        return self.estado
+
+    def recursivaB(self, floresta, a, b):
+        if a == b:
+            self.estado = True
+        self.vertices.append(a)
+        for i in floresta[a]:
+            if i not in self.vertices:
+                self.recursivaB(floresta, i, b)
+
     def Kruskal(self):
         pilha = self.pilha(self.D)
         floresta = {}
@@ -367,7 +351,7 @@ class Grafo:
             for i in pilha:
                 a = pilha[i][const][const]
                 b = pilha[i][const][const1]
-                if not self.mesma_arv_fixed(floresta, a, b):
+                if not self.recursivaA(floresta, a, b):
                     floresta[a].append(b)
                     floresta[b].append(a)
                     arvore[i] = self.D[i]
