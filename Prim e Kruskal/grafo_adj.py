@@ -1,5 +1,7 @@
-from copy import copy, deepcopy
 from math import inf
+
+const = 0
+const1 = -1
 
 class VerticeInvalidoException(Exception):
     pass
@@ -32,8 +34,9 @@ class Grafo:
         self.minE = None
         self.maxE = None
         self.arestas = {}
-        self.VA = {}
-        self.contador = 1  # contador para a gravação das chaves (arestas) do self.MD { "a{}".format(selfcounter) }
+        self.contador = 1
+        self.V = {}
+        self.D = {}
 
         if len(M) != len(N):
             raise MatrizInvalidaException('A matriz passada como parâmetro não tem o tamanho correto')
@@ -139,29 +142,34 @@ class Grafo:
 
     def adiciona_aresta(self, a):
         peso = a[-1]
-        if self.aresta_valida(a[0]) and self.peso_valido(peso):
+        if self.aresta_valida(a[0]):
             self.M[self.indice_primeiro_vertice_aresta(a[0])][self.indice_segundo_vertice_aresta(a[0])] += 1
             aresta = "a{}".format(self.contador)
             self.contador += 1
+            self.D[aresta] = [a[0], peso]
             self.arestas[aresta] = [a[0], peso]
             if self.minE is None:
                 self.minE = aresta
+            elif peso < self.D[self.minE][-1]:
+                self.minE = aresta
+            elif peso > self.D[self.maxE][-1]:
+                self.maxE = aresta
             elif peso < self.arestas[self.minE][-1]:
                 self.minE = aresta
             if self.maxE is None:
                 self.maxE = aresta
             elif peso > self.arestas[self.maxE][-1]:
                 self.maxE = aresta
-            if a[0][0] in self.VA.keys():
-                if aresta not in self.VA[a[0][0]]:
-                    self.VA[a[0][0]].append(aresta)
+            if a[0][0] in self.V.keys():
+                if aresta not in self.V[a[0][0]]:
+                    self.V[a[0][0]].append(aresta)
             else:
-                self.VA[a[0][0]] = [aresta]
-            if a[0][-1] in self.VA.keys():
-                if aresta not in self.VA[a[0][-1]]:
-                    self.VA[a[0][-1]].append(aresta)
+                self.V[a[0][0]] = [aresta]
+            if a[0][-1] in self.V.keys():
+                if aresta not in self.V[a[0][-1]]:
+                    self.V[a[0][-1]].append(aresta)
             else:
-                self.VA[a[0][-1]] = [aresta]
+                self.V[a[0][-1]] = [aresta]
         else:
             ArestaInvalidaException('A aresta ' + self.A[a[0]] + ' é inválida')
 
@@ -192,51 +200,180 @@ class Grafo:
 
         return grafo_str
 
-    def peso_valido(self, p):
-        if 0 < p < inf:
-            return True
-        return False
+    # PRIM
 
+    def Min(self, dictionary):
+        aux = None
+
+        try:
+            inicio = min(dictionary.values())
+        except:
+            return "vazio"
+
+        if inicio != inf:
+            for i in dictionary.keys():
+                if dictionary[i] == inicio:
+                    aux = i
+        if aux is None:
+            return 'desconexo'
+
+        return aux
+
+    def verticesAdjacentes(self, vertice, dictionary):
+        vertices = self.V
+        arestas = self.D
+        lista = []
+
+        for i in vertices[vertice]:
+            for j in arestas[i][const]:
+                if j != '-':
+                    if j != vertice and j not in lista and j in dictionary.keys():
+                        lista.append(j)
+                        break
+        return lista
+
+    def menorAresta(self, vertice, inicio, dictAux):
+        arestas = []
+        aux = None
+
+        for i in self.V[vertice]:
+            if self.arestas[i][const] != self.arestas[i][const1]:
+                if self.arestas[i][const] not in dictAux.keys() or self.arestas[i][const1] not in dictAux.keys():
+                    arestas.append(i)
+        for i in arestas:
+            if vertice in self.arestas[i][const] and inicio in self.arestas[i][const]:
+                if aux is None:
+                    aux = i
+                elif self.arestas[i][const1] < self.arestas[aux][const1]:
+                    aux = i
+        return aux
+
+    def menorVertice(self):
+        menorAresta = None
+
+        for i in self.arestas.keys():
+            if menorAresta is None:
+                menorAresta = i
+            elif self.arestas[i][const1] < self.arestas[menorAresta][const1]:
+                menorAresta = i
+        if menorAresta is not None:
+            return self.arestas[menorAresta][const][const]
+
+        return "vazio"
 
     def Prim(self):
         vertices = self.N
-        listArestas = self.arestas
-        const0 = 0
+        map = {}
+        vInicial = self.menorVertice()
+        mapa = {}
+        mapa[vInicial] = 0
+        pode = True
+        dict = {}
         const1 = -1
+        arestas = self.arestas
+        aux = None
 
-        vEscolhido = vertices[const0]
-        vTamanho = len(vertices)
-        copyVertices = deepcopy(vertices)
-        listVerticeEscolhido = []
-        listVerticeEscolhido.append(vEscolhido)
-        copyVertices.remove(vEscolhido)
-        copyArestas = deepcopy(listArestas)
-        dictArestas = {}
 
-        while(len(listVerticeEscolhido)) != vTamanho:
-            minimo = None
-            aux = None
+        for i in vertices:
+            mapa[i] = inf
 
-            for i in copyArestas.keys():
-                if (copyArestas[i][const0][const0] in copyVertices and copyArestas[i][const0][const1] not in copyVertices) or (copyArestas[i][const0][const1] in copyVertices and copyArestas[i][const0][const0] not in copyVertices):
-                    if minimo is None:
-                        minimo = copyArestas[i]
-                        aux = i
-                    else:
-                        if copyArestas[i][const1] < minimo[const1]:
-                            minimo = copyArestas[i]
-                            aux = i
-
-            if minimo is not None:
-                dictArestas[aux] = listArestas[aux]
-                if copyArestas[aux][const0][const0] in copyVertices:
-                    verticeAux = copyArestas[aux][const0][const0]
-                else:
-                    verticeAux = copyArestas[aux][const0][const1]
-                listVerticeEscolhido.append(verticeAux)
-                copyVertices.remove(verticeAux)
-
+        while True:
+            if pode:
+                inicio = vInicial
+                pode = False
             else:
+                inicio = self.Min(mapa)
+            if inicio == "desconexo":
                 return False
+            elif inicio == "vazio":
+                break
+            else:
+                mapa.pop(inicio)
+                verticeAdj = self.verticesAdjacentes(inicio, mapa)
+                for i in verticeAdj:
+                    menor_aresta = self.menorAresta(i, inicio, map)
+                    mapa[i] = arestas[menor_aresta][const1]
+                    if i not in map.keys():
+                        map[i] = menor_aresta
+                    else:
+                        if arestas[menor_aresta][const1] < arestas[map[i]][const1]:
+                            map[i] = menor_aresta
 
-        return dictArestas
+        for i in map.values():
+            dict[i] = self.arestas[i]
+        return dict
+
+    # KRUSKAL
+
+    def mesma_arv_fixed(self, floresta, a, b):
+        self.vertices = []
+        self.estado = False
+        self.mesma_arvore_r_fixed(floresta, a, b)
+        return self.estado
+
+    def mesma_arvore_r_fixed(self, floresta, a, b):
+        if a == b:
+            self.estado = True
+        self.vertices.append(a)
+        for i in floresta[a]:
+            if i not in self.vertices:
+                self.mesma_arvore_r_fixed(floresta, i, b)
+
+    # def arvore(self, floresta, x, y):
+    #     self.vertices = []
+    #     self.estado = False
+    #
+    #     if x == y:
+    #         self.estado = True
+    #
+    #     self.vertices.append(x)
+    #
+    #     for i in floresta[x]:
+    #         if i not in self.vertices:
+    #             self.arvore(floresta, i, y)
+    #
+    #     return self.estado
+
+    def pilha(self, dictionary):
+        lista = dictionary.values()
+        buckets = {}
+        listaOrdenada = {}
+
+        for i in lista:
+            if "bucket{}".format(const) not in buckets.keys():
+                buckets["bucket{}".format(const)] = [i]
+            else:
+                buckets["bucket{}".format(const)].append(i)
+
+        for aux in sorted(buckets.keys()):
+            buckets[aux].sort(key = lambda a: a[const1])
+            for i in buckets[aux]:
+                for j in self.D.keys():
+                    if self.D[j] == i:
+                        listaOrdenada[j] = i
+
+        return listaOrdenada
+
+    def Kruskal(self):
+        pilha = self.pilha(self.D)
+        floresta = {}
+        arvore = {}
+        vertices = []
+
+        for i in self.N:
+            floresta[i] = []
+
+        if len(pilha) > 0:
+            for i in pilha:
+                a = pilha[i][const][const]
+                b = pilha[i][const][const1]
+                if not self.mesma_arv_fixed(floresta, a, b):
+                    floresta[a].append(b)
+                    floresta[b].append(a)
+                    arvore[i] = self.D[i]
+                    if a not in vertices:
+                        vertices.append(a)
+                    elif b not in vertices:
+                        vertices.append(b)
+
+        return arvore
