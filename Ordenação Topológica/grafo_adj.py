@@ -1,3 +1,4 @@
+from copy import deepcopy
 class VerticeInvalidoException(Exception):
     pass
 
@@ -8,15 +9,6 @@ class ArestaInvalidaException(Exception):
 
 class MatrizInvalidaException(Exception):
     pass
-
-
-pilha = []
-pilhaSequencia = []
-visitados = []
-tamanhoPilha = len(pilhaSequencia)
-naoVisitados = []
-visitados = []
-ordenado = []
 
 
 def verticesAdjacentes(arestas, vertices, verticePassado):
@@ -36,13 +28,26 @@ class Grafo:
     SEPARADOR_ARESTA = '-'
     __maior_vertice = 0
 
-    def __init__(self, N=[], M=[]):
+    def __init__(self, N=None, M=None):
+
+        self.pilha = []
+        self.pilhaSequencia = []
+        self.visitados = []
+        self.tamanhoPilha = 0
+        self.naoVisitados = []
+        self.visitados = []
+        self.ordenado = []
+
         '''
         Constrói um objeto do tipo Grafo. Se nenhum parâmetro for passado, cria um Grafo vazio.
         Se houver alguma aresta ou algum vértice inválido, uma exceção é lançada.
         :param N: Uma lista dos vértices (ou nodos) do grafo.
         :param V: Uma matriz de adjacência que guarda as arestas do grafo. Cada entrada da matriz tem um inteiro que indica a quantidade de arestas que ligam aqueles vértices
         '''
+        if M is None:
+            M = []
+        if N is None:
+            N = []
         for v in N:
             if not (Grafo.vertice_valido(v)):
                 raise VerticeInvalidoException('O vértice ' + v + ' é inválido')
@@ -190,8 +195,8 @@ class Grafo:
         arestas = self.M
         vertices = self.N
         vertices_adj = []
-        pilhaAUx = pilha
-        pilhaSequenciaAux = pilhaSequencia
+        pilhaAUx = self.pilha
+        pilhaSequenciaAux = self.pilhaSequencia
         pode = True
 
         vertices_adj = verticesAdjacentes(arestas, vertices, verticePassado)
@@ -199,38 +204,39 @@ class Grafo:
         for i in range(len(vertices)):
             aux = vertices[i]
             if aux == verticePassado:
-                listVisitados = visitados
-                if aux not in visitados and len(vertices_adj) > 0:
-                    visitados.append(aux)
-                    pilhaSequencia.append(aux)
+                listVisitados = self.visitados
+                if aux not in self.visitados and len(vertices_adj) > 0:
+                    self.visitados.append(aux)
+                    self.pilhaSequencia.append(aux)
                     self.dfs(vertices_adj[0])
-                if aux not in visitados:
-                    visitados.append(aux)
-                    pilha.append(aux)
-                    pilhaSequencia.append(aux)
+                if aux not in self.visitados:
+                    self.visitados.append(aux)
+                    self.pilha.append(aux)
+                    self.pilhaSequencia.append(aux)
 
-        print(pilha)
+        # print(pilha)
 
     def OrdenTopo(self):
-        vertices = self.N
+        vertices = deepcopy(self.N)
+        # print("comecou", vertices)
 
         for i in range(len(vertices)):
-            naoVisitados.append(vertices[i])
+            self.naoVisitados.append(vertices[i])
 
         for i in range(len(vertices)):
-            if vertices[i] in naoVisitados:
+            if vertices[i] in self.naoVisitados:
                 self.BuscaProfOrdenTopo(vertices[i])
 
-        ordenado.reverse()
-
-        return ordenado
+        return self.ordenado
 
     def BuscaProfOrdenTopo(self, v):
-        naoVisitados.remove(v)
-        visitados.append(v)
-        arestas = self.M
-        vertices = self.N
+        self.naoVisitados.remove(v)
+        self.visitados.append(v)
+        arestas = deepcopy(self.M)
+        vertices = deepcopy(self.N)
         verticesAdj = []
+
+        # print("Busca em profundidade", vertices)
 
         for i in range(len(arestas)):
             if vertices[i] == v:
@@ -240,10 +246,10 @@ class Grafo:
                 break
 
         for i in range(len(verticesAdj)):
-            if verticesAdj[i] in naoVisitados:
+            if verticesAdj[i] in self.naoVisitados:
                 self.BuscaProfOrdenTopo(verticesAdj[i])
 
-        ordenado.append(v)
+        self.ordenado.append(v)
 
     def kahn(self):
         arestas = self.M
